@@ -2,7 +2,7 @@
 
 ## Description
 
-This `acts_as` extension provides the capabilities for sorting and reordering a number of objects in a list. The class that has this specified needs to have a `position` column defined as an integer on the mapped database table.
+This `acts_as` extension provides the capabilities for sorting and reordering a number of objects in a list. The class that has this specified needs to have a `position` column defined as a float on the mapped database table.
 
 ## Installation
 
@@ -18,7 +18,7 @@ Or, from the command line:
 
 At first, you need to add a `position` column to desired table:
 
-    rails g migration AddPositionToTodoItem position:integer
+    rails g migration AddPositionToTodoItem position:float
     rake db:migrate
     
 After that you can use `acts_as_list` method in the model: 

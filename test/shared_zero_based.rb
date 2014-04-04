@@ -6,27 +6,27 @@ module Shared
 
     def test_insert
       new = ZeroBasedMixin.create(parent_id: 20)
-      assert_equal 0, new.pos
+      assert_equal 0, new.index_in_list
       assert new.first?
       assert new.last?
 
       new = ZeroBasedMixin.create(parent_id: 20)
-      assert_equal 1, new.pos
+      assert_equal 1, new.index_in_list
       assert !new.first?
       assert new.last?
 
       new = ZeroBasedMixin.create(parent_id: 20)
-      assert_equal 2, new.pos
+      assert_equal 2, new.index_in_list
       assert !new.first?
       assert new.last?
 
       new = ZeroBasedMixin.create(parent_id: 0)
-      assert_equal 0, new.pos
+      assert_equal 0, new.index_in_list
       assert new.first?
       assert new.last?
 
       new = ZeroBasedMixin.create(parent_id: 1, pos: -500)
-      assert_equal 0, new.pos
+      assert_equal 0, new.index_in_list
       assert new.first?
       assert new.last?
     end
@@ -55,37 +55,37 @@ module Shared
 
     def test_insert_at
       new = ZeroBasedMixin.create(parent_id: 20)
-      assert_equal 0, new.pos
+      assert_equal 0, new.index_in_list
 
       new = ZeroBasedMixin.create(parent_id: 20)
-      assert_equal 1, new.pos
+      assert_equal 1, new.index_in_list
 
       new = ZeroBasedMixin.create(parent_id: 20)
-      assert_equal 2, new.pos
+      assert_equal 2, new.index_in_list
 
       new4 = ZeroBasedMixin.create(parent_id: 20)
-      assert_equal 3, new4.pos
+      assert_equal 3, new4.index_in_list
 
       new4.insert_at(2)
-      assert_equal 2, new4.pos
+      assert_equal 2, new4.index_in_list
 
       new.reload
-      assert_equal 3, new.pos
+      assert_equal 3, new.index_in_list
 
       new.insert_at(2)
-      assert_equal 2, new.pos
+      assert_equal 2, new.index_in_list
 
       new4.reload
-      assert_equal 3, new4.pos
+      assert_equal 3, new4.index_in_list
 
-      new5 = ListMixin.create(parent_id: 20)
-      assert_equal 4, new5.pos
+      new5 = ZeroBasedMixin.create(parent_id: 20)
+      assert_equal 4, new5.index_in_list
 
       new5.insert_at(1)
-      assert_equal 1, new5.pos
+      assert_equal 1, new5.index_in_list
 
       new4.reload
-      assert_equal 4, new4.pos
+      assert_equal 4, new4.index_in_list
     end
   end
 end

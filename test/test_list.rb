@@ -9,7 +9,7 @@ def setup_db(position_options = {})
   ActiveRecord::Base.connection.schema_cache.clear!
   ActiveRecord::Schema.define(version: 1) do
     create_table :mixins do |t|
-      t.column :pos, :integer, position_options
+      t.column :pos, :float, position_options
       t.column :active, :boolean, default: true
       t.column :parent_id, :integer
       t.column :parent_type, :string
@@ -177,17 +177,17 @@ class DefaultScopedTest < ActsAsListTestCase
 
   def test_insert
     new = DefaultScopedMixin.create
-    assert_equal 5, new.pos
+    assert_equal 5, new.index_in_list
     assert !new.first?
     assert new.last?
 
     new = DefaultScopedMixin.create
-    assert_equal 6, new.pos
+    assert_equal 6, new.index_in_list
     assert !new.first?
     assert new.last?
 
     new = DefaultScopedMixin.create
-    assert_equal 7, new.pos
+    assert_equal 7, new.index_in_list
     assert !new.first?
     assert new.last?
   end
@@ -216,48 +216,48 @@ class DefaultScopedTest < ActsAsListTestCase
 
   def test_insert_at
     new = DefaultScopedMixin.create
-    assert_equal 5, new.pos
+    assert_equal 5, new.index_in_list
 
     new = DefaultScopedMixin.create
-    assert_equal 6, new.pos
+    assert_equal 6, new.index_in_list
 
     new = DefaultScopedMixin.create
-    assert_equal 7, new.pos
+    assert_equal 7, new.index_in_list
 
     new4 = DefaultScopedMixin.create
-    assert_equal 8, new4.pos
+    assert_equal 8, new4.index_in_list
 
     new4.insert_at(2)
-    assert_equal 2, new4.pos
+    assert_equal 2, new4.index_in_list
 
     new.reload
-    assert_equal 8, new.pos
+    assert_equal 8, new.index_in_list
 
     new.insert_at(2)
-    assert_equal 2, new.pos
+    assert_equal 2, new.index_in_list
 
     new4.reload
-    assert_equal 3, new4.pos
+    assert_equal 3, new4.index_in_list
 
     new5 = DefaultScopedMixin.create
-    assert_equal 9, new5.pos
+    assert_equal 9, new5.index_in_list
 
     new5.insert_at(1)
-    assert_equal 1, new5.pos
+    assert_equal 1, new5.index_in_list
 
     new4.reload
-    assert_equal 4, new4.pos
+    assert_equal 4, new4.index_in_list
   end
 
   def test_update_position
     assert_equal [1, 2, 3, 4], DefaultScopedMixin.all.map(&:id)
-    DefaultScopedMixin.where(id: 2).first.set_list_position(4)
+    DefaultScopedMixin.where(id: 2).first.insert_at(4)
     assert_equal [1, 3, 4, 2], DefaultScopedMixin.all.map(&:id)
-    DefaultScopedMixin.where(id: 2).first.set_list_position(2)
+    DefaultScopedMixin.where(id: 2).first.insert_at(2)
     assert_equal [1, 2, 3, 4], DefaultScopedMixin.all.map(&:id)
-    DefaultScopedMixin.where(id: 1).first.set_list_position(4)
+    DefaultScopedMixin.where(id: 1).first.insert_at(4)
     assert_equal [2, 3, 4, 1], DefaultScopedMixin.all.map(&:id)
-    DefaultScopedMixin.where(id: 1).first.set_list_position(1)
+    DefaultScopedMixin.where(id: 1).first.insert_at(1)
     assert_equal [1, 2, 3, 4], DefaultScopedMixin.all.map(&:id)
   end
 end
@@ -270,17 +270,17 @@ class DefaultScopedWhereTest < ActsAsListTestCase
 
   def test_insert
     new = DefaultScopedWhereMixin.create
-    assert_equal 5, new.pos
+    assert_equal 5, new.index_in_list
     assert !new.first?
     assert new.last?
 
     new = DefaultScopedWhereMixin.create
-    assert_equal 6, new.pos
+    assert_equal 6, new.index_in_list
     assert !new.first?
     assert new.last?
 
     new = DefaultScopedWhereMixin.create
-    assert_equal 7, new.pos
+    assert_equal 7, new.index_in_list
     assert !new.first?
     assert new.last?
   end
@@ -309,48 +309,48 @@ class DefaultScopedWhereTest < ActsAsListTestCase
 
   def test_insert_at
     new = DefaultScopedWhereMixin.create
-    assert_equal 5, new.pos
+    assert_equal 5, new.index_in_list
 
     new = DefaultScopedWhereMixin.create
-    assert_equal 6, new.pos
+    assert_equal 6, new.index_in_list
 
     new = DefaultScopedWhereMixin.create
-    assert_equal 7, new.pos
+    assert_equal 7, new.index_in_list
 
     new4 = DefaultScopedWhereMixin.create
-    assert_equal 8, new4.pos
+    assert_equal 8, new4.index_in_list
 
     new4.insert_at(2)
-    assert_equal 2, new4.pos
+    assert_equal 2, new4.index_in_list
 
     new.reload
-    assert_equal 8, new.pos
+    assert_equal 8, new.index_in_list
 
     new.insert_at(2)
-    assert_equal 2, new.pos
+    assert_equal 2, new.index_in_list
 
     new4.reload
-    assert_equal 3, new4.pos
+    assert_equal 3, new4.index_in_list
 
     new5 = DefaultScopedWhereMixin.create
-    assert_equal 9, new5.pos
+    assert_equal 9, new5.index_in_list
 
     new5.insert_at(1)
-    assert_equal 1, new5.pos
+    assert_equal 1, new5.index_in_list
 
     new4.reload
-    assert_equal 4, new4.pos
+    assert_equal 4, new4.index_in_list
   end
 
   def test_update_position
     assert_equal [1, 2, 3, 4], DefaultScopedWhereMixin.for_active_false_tests.map(&:id)
-    DefaultScopedWhereMixin.for_active_false_tests.where(id: 2).first.set_list_position(4)
+    DefaultScopedWhereMixin.for_active_false_tests.where(id: 2).first.insert_at(4)
     assert_equal [1, 3, 4, 2], DefaultScopedWhereMixin.for_active_false_tests.map(&:id)
-    DefaultScopedWhereMixin.for_active_false_tests.where(id: 2).first.set_list_position(2)
+    DefaultScopedWhereMixin.for_active_false_tests.where(id: 2).first.insert_at(2)
     assert_equal [1, 2, 3, 4], DefaultScopedWhereMixin.for_active_false_tests.map(&:id)
-    DefaultScopedWhereMixin.for_active_false_tests.where(id: 1).first.set_list_position(4)
+    DefaultScopedWhereMixin.for_active_false_tests.where(id: 1).first.insert_at(4)
     assert_equal [2, 3, 4, 1], DefaultScopedWhereMixin.for_active_false_tests.map(&:id)
-    DefaultScopedWhereMixin.for_active_false_tests.where(id: 1).first.set_list_position(1)
+    DefaultScopedWhereMixin.for_active_false_tests.where(id: 1).first.insert_at(1)
     assert_equal [1, 2, 3, 4], DefaultScopedWhereMixin.for_active_false_tests.map(&:id)
   end
 
@@ -386,22 +386,20 @@ class MultiDestroyTest < ActsAsListTestCase
   #
   def test_destroy
     new1 = DefaultScopedMixin.create
-    assert_equal 1, new1.pos
+    assert_equal 1, new1.index_in_list
 
     new2 = DefaultScopedMixin.create
-    assert_equal 2, new2.pos
+    assert_equal 2, new2.index_in_list
 
     new3 = DefaultScopedMixin.create
-    assert_equal 3, new3.pos
+    assert_equal 3, new3.index_in_list
 
     new1.destroy
     new2.destroy
     new3.reload
-    assert_equal 1, new3.pos
+    assert_equal 1, new3.index_in_list
   end
 end
-
-#class TopAdditionMixin < Mixin
 
 class TopAdditionTest < ActsAsListTestCase
   include Shared::TopAddition
@@ -440,17 +438,17 @@ class MultipleListsTest < ActsAsListTestCase
   def test_check_scope_order
     assert_equal [1, 2, 3, 4], ListMixin.where(:parent_id => 1).order(:pos).map(&:id)
     assert_equal [5, 6, 7, 8], ListMixin.where(:parent_id => 2).order(:pos).map(&:id)
-    ListMixin.find(4).update_attributes(:parent_id => 2, :pos => 2)
+    ListMixin.find(4).update_attributes(:parent_id => 2)
     assert_equal [1, 2, 3], ListMixin.where(:parent_id => 1).order(:pos).map(&:id)
-    assert_equal [5, 4, 6, 7, 8], ListMixin.where(:parent_id => 2).order(:pos).map(&:id)
+    assert_equal [5, 6, 7, 8, 4], ListMixin.where(:parent_id => 2).order(:pos).map(&:id)
   end
 
   def test_check_scope_position
-    assert_equal [1, 2, 3, 4], ListMixin.where(:parent_id => 1).map(&:pos)
-    assert_equal [1, 2, 3, 4], ListMixin.where(:parent_id => 2).map(&:pos)
-    ListMixin.find(4).update_attributes(:parent_id => 2, :pos => 2)
-    assert_equal [1, 2, 3], ListMixin.where(:parent_id => 1).order(:pos).map(&:pos)
-    assert_equal [1, 2, 3, 4, 5], ListMixin.where(:parent_id => 2).order(:pos).map(&:pos)
+    assert_equal [1, 2, 3, 4], ListMixin.where(:parent_id => 1).map(&:index_in_list)
+    assert_equal [1, 2, 3, 4], ListMixin.where(:parent_id => 2).map(&:index_in_list)
+    ListMixin.find(4).update_attributes(:parent_id => 2)
+    assert_equal [1, 2, 3], ListMixin.where(:parent_id => 1).order(:pos).map(&:index_in_list)
+    assert_equal [1, 2, 3, 4, 5], ListMixin.where(:parent_id => 2).order(:pos).map(&:index_in_list)
   end
 end
 
@@ -465,48 +463,48 @@ class MultipleListsArrayScopeTest < ActsAsListTestCase
   def test_order_after_all_scope_properties_are_changed
     assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:id)
     assert_equal [5, 6, 7, 8], ArrayScopeListMixin.where(:parent_id => 2, :parent_type => 'something').order(:pos).map(&:id)
-    ArrayScopeListMixin.find(2).update_attributes(:parent_id => 2, :pos => 2,:parent_type => 'something')
+    ArrayScopeListMixin.find(2).update_attributes(:parent_id => 2, :parent_type => 'something')
     assert_equal [1, 3, 4], ArrayScopeListMixin.where(:parent_id => 1,:parent_type => 'anything').order(:pos).map(&:id)
-    assert_equal [5, 2, 6, 7, 8], ArrayScopeListMixin.where(:parent_id => 2,:parent_type => 'something').order(:pos).map(&:id)
+    assert_equal [5, 6, 7, 8, 2], ArrayScopeListMixin.where(:parent_id => 2,:parent_type => 'something').order(:pos).map(&:id)
   end
 
   def test_position_after_all_scope_properties_are_changed
-    assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').map(&:pos)
-    assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 2, :parent_type => 'something').map(&:pos)
-    ArrayScopeListMixin.find(4).update_attributes(:parent_id => 2, :pos => 2, :parent_type => 'something')
-    assert_equal [1, 2, 3], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:pos)
-    assert_equal [1, 2, 3, 4, 5], ArrayScopeListMixin.where(:parent_id => 2, :parent_type => 'something').order(:pos).map(&:pos)
+    assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').map(&:index_in_list)
+    assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 2, :parent_type => 'something').map(&:index_in_list)
+    ArrayScopeListMixin.find(4).update_attributes(:parent_id => 2, :parent_type => 'something')
+    assert_equal [1, 2, 3], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:index_in_list)
+    assert_equal [1, 2, 3, 4, 5], ArrayScopeListMixin.where(:parent_id => 2, :parent_type => 'something').order(:pos).map(&:index_in_list)
   end
 
   def test_order_after_one_scope_property_is_changed
     assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:id)
     assert_equal [9, 10, 11, 12], ArrayScopeListMixin.where(:parent_id => 3, :parent_type => 'anything').order(:pos).map(&:id)
-    ArrayScopeListMixin.find(2).update_attributes(:parent_id => 3, :pos => 2)
+    ArrayScopeListMixin.find(2).update_attributes(:parent_id => 3)
     assert_equal [1, 3, 4], ArrayScopeListMixin.where(:parent_id => 1,:parent_type => 'anything').order(:pos).map(&:id)
-    assert_equal [9, 2, 10, 11, 12], ArrayScopeListMixin.where(:parent_id => 3,:parent_type => 'anything').order(:pos).map(&:id)
+    assert_equal [9, 10, 11, 12, 2], ArrayScopeListMixin.where(:parent_id => 3,:parent_type => 'anything').order(:pos).map(&:id)
   end
 
   def test_position_after_one_scope_property_is_changed
-    assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').map(&:pos)
-    assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 3, :parent_type => 'anything').map(&:pos)
-    ArrayScopeListMixin.find(4).update_attributes(:parent_id => 3, :pos => 2)
-    assert_equal [1, 2, 3], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:pos)
-    assert_equal [1, 2, 3, 4, 5], ArrayScopeListMixin.where(:parent_id => 3, :parent_type => 'anything').order(:pos).map(&:pos)
+    assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').map(&:index_in_list)
+    assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 3, :parent_type => 'anything').map(&:index_in_list)
+    ArrayScopeListMixin.find(4).update_attributes(:parent_id => 3)
+    assert_equal [1, 2, 3], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:index_in_list)
+    assert_equal [1, 2, 3, 4, 5], ArrayScopeListMixin.where(:parent_id => 3, :parent_type => 'anything').order(:pos).map(&:index_in_list)
   end
 
   def test_order_after_moving_to_empty_list
     assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:id)
     assert_equal [], ArrayScopeListMixin.where(:parent_id => 4, :parent_type => 'anything').order(:pos).map(&:id)
-    ArrayScopeListMixin.find(2).update_attributes(:parent_id => 4, :pos => 1)
+    ArrayScopeListMixin.find(2).update_attributes(:parent_id => 4)
     assert_equal [1, 3, 4], ArrayScopeListMixin.where(:parent_id => 1,:parent_type => 'anything').order(:pos).map(&:id)
     assert_equal [2], ArrayScopeListMixin.where(:parent_id => 4,:parent_type => 'anything').order(:pos).map(&:id)
   end
 
   def test_position_after_moving_to_empty_list
-    assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').map(&:pos)
-    assert_equal [], ArrayScopeListMixin.where(:parent_id => 4, :parent_type => 'anything').map(&:pos)
-    ArrayScopeListMixin.find(2).update_attributes(:parent_id => 4, :pos => 1)
-    assert_equal [1, 2, 3], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:pos)
-    assert_equal [1], ArrayScopeListMixin.where(:parent_id => 4, :parent_type => 'anything').order(:pos).map(&:pos)
+    assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').map(&:index_in_list)
+    assert_equal [], ArrayScopeListMixin.where(:parent_id => 4, :parent_type => 'anything').map(&:index_in_list)
+    ArrayScopeListMixin.find(2).update_attributes(:parent_id => 4)
+    assert_equal [1, 2, 3], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:index_in_list)
+    assert_equal [1], ArrayScopeListMixin.where(:parent_id => 4, :parent_type => 'anything').order(:pos).map(&:index_in_list)
   end
 end

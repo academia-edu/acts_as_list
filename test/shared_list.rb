@@ -51,59 +51,59 @@ module Shared
 
     def test_insert
       new = ListMixin.create(parent_id: 20)
-      assert_equal 1, new.pos
+      assert_equal 1, new.index_in_list
       assert new.first?
       assert new.last?
 
       new = ListMixin.create(parent_id: 20)
-      assert_equal 2, new.pos
+      assert_equal 2, new.index_in_list
       assert !new.first?
       assert new.last?
 
       new = ListMixin.create(parent_id: 20)
-      assert_equal 3, new.pos
+      assert_equal 3, new.index_in_list
       assert !new.first?
       assert new.last?
 
       new = ListMixin.create(parent_id: 0)
-      assert_equal 1, new.pos
+      assert_equal 1, new.index_in_list
       assert new.first?
       assert new.last?
     end
 
     def test_insert_at
       new = ListMixin.create(parent_id: 20)
-      assert_equal 1, new.pos
+      assert_equal 1, new.index_in_list
 
       new = ListMixin.create(parent_id: 20)
-      assert_equal 2, new.pos
+      assert_equal 2, new.index_in_list
 
       new = ListMixin.create(parent_id: 20)
-      assert_equal 3, new.pos
+      assert_equal 3, new.index_in_list
 
       new4 = ListMixin.create(parent_id: 20)
-      assert_equal 4, new4.pos
+      assert_equal 4, new4.index_in_list
 
       new4.insert_at(3)
-      assert_equal 3, new4.pos
+      assert_equal 3, new4.index_in_list
 
       new.reload
-      assert_equal 4, new.pos
+      assert_equal 4, new.index_in_list
 
       new.insert_at(2)
-      assert_equal 2, new.pos
+      assert_equal 2, new.index_in_list
 
       new4.reload
-      assert_equal 4, new4.pos
+      assert_equal 4, new4.index_in_list
 
       new5 = ListMixin.create(parent_id: 20)
-      assert_equal 5, new5.pos
+      assert_equal 5, new5.index_in_list
 
       new5.insert_at(1)
-      assert_equal 1, new5.pos
+      assert_equal 1, new5.index_in_list
 
       new4.reload
-      assert_equal 5, new4.pos
+      assert_equal 5, new4.index_in_list
     end
 
     def test_delete_middle
@@ -115,21 +115,21 @@ module Shared
 
       assert_equal [1, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
 
-      assert_equal 1, ListMixin.where(id: 1).first.pos
-      assert_equal 2, ListMixin.where(id: 3).first.pos
-      assert_equal 3, ListMixin.where(id: 4).first.pos
+      assert_equal 1, ListMixin.where(id: 1).first.index_in_list
+      assert_equal 2, ListMixin.where(id: 3).first.index_in_list
+      assert_equal 3, ListMixin.where(id: 4).first.index_in_list
 
       ListMixin.where(id: 1).first.destroy
 
       assert_equal [3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
 
-      assert_equal 1, ListMixin.where(id: 3).first.pos
-      assert_equal 2, ListMixin.where(id: 4).first.pos
+      assert_equal 1, ListMixin.where(id: 3).first.index_in_list
+      assert_equal 2, ListMixin.where(id: 4).first.index_in_list
     end
 
     def test_with_string_based_scope
       new = ListWithStringScopeMixin.create(parent_id: 500)
-      assert_equal 1, new.pos
+      assert_equal 1, new.index_in_list
       assert new.first?
       assert new.last?
     end
@@ -146,16 +146,16 @@ module Shared
 
       ListMixin.where(id: 2).first.move_within_scope(6)
 
-      assert_equal 2, ListMixin.where(id: 2).first.pos
+      assert_equal 1, ListMixin.where(id: 2).first.index_in_list
 
       assert_equal [1, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
 
-      assert_equal 1, ListMixin.where(id: 1).first.pos
-      assert_equal 2, ListMixin.where(id: 3).first.pos
-      assert_equal 3, ListMixin.where(id: 4).first.pos
+      assert_equal 1, ListMixin.where(id: 1).first.index_in_list
+      assert_equal 2, ListMixin.where(id: 3).first.index_in_list
+      assert_equal 3, ListMixin.where(id: 4).first.index_in_list
 
       ListMixin.where(id: 2).first.move_within_scope(5)
-      assert_equal [1, 2, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
+      assert_equal [1, 3, 4, 2], ListMixin.where(parent_id: 5).order('pos').map(&:id)
     end
 
     def test_remove_from_list_should_then_fail_in_list?
@@ -171,10 +171,10 @@ module Shared
 
       assert_equal [2, 1, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
 
-      assert_equal 1,   ListMixin.where(id: 1).first.pos
-      assert_equal nil, ListMixin.where(id: 2).first.pos
-      assert_equal 2,   ListMixin.where(id: 3).first.pos
-      assert_equal 3,   ListMixin.where(id: 4).first.pos
+      assert_equal 1,   ListMixin.where(id: 1).first.index_in_list
+      assert_equal nil, ListMixin.where(id: 2).first.index_in_list
+      assert_equal 2,   ListMixin.where(id: 3).first.index_in_list
+      assert_equal 3,   ListMixin.where(id: 4).first.index_in_list
     end
 
     def test_remove_before_destroy_does_not_shift_lower_items_twice
@@ -185,62 +185,36 @@ module Shared
 
       assert_equal [1, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
 
-      assert_equal 1, ListMixin.where(id: 1).first.pos
-      assert_equal 2, ListMixin.where(id: 3).first.pos
-      assert_equal 3, ListMixin.where(id: 4).first.pos
+      assert_equal 1, ListMixin.where(id: 1).first.index_in_list
+      assert_equal 2, ListMixin.where(id: 3).first.index_in_list
+      assert_equal 3, ListMixin.where(id: 4).first.index_in_list
     end
 
-    def test_before_destroy_callbacks_do_not_update_position_to_nil_before_deleting_the_record
-      assert_equal [1, 2, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
-
-      # We need to trigger all the before_destroy callbacks without actually
-      # destroying the record so we can see the affect the callbacks have on
-      # the record.
-      # NOTE: Hotfix for rails3 ActiveRecord
-      list = ListMixin.where(id: 2).first
-      if list.respond_to?(:run_callbacks)
-        # Refactored to work according to Rails3 ActiveRSupport Callbacks <http://api.rubyonrails.org/classes/ActiveSupport/Callbacks.html>
-        list.run_callbacks(:destroy) if rails_3
-        list.run_callbacks(:before_destroy) if !rails_3
-      else
-        list.send(:callback, :before_destroy)
-      end
-
-      assert_equal [1, 2, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
-
-      assert_equal 1, ListMixin.where(id: 1).first.pos
-      assert_equal 2, ListMixin.where(id: 2).first.pos
-      assert_equal 2, ListMixin.where(id: 3).first.pos
-      assert_equal 3, ListMixin.where(id: 4).first.pos
-    end
-
-    def test_before_create_callback_adds_to_bottom
+    def test_adding_new_record_adds_to_bottom
       assert_equal [1, 2, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
 
       new = ListMixin.create(parent_id: 5)
-      assert_equal 5, new.pos
+      assert_equal 5, new.index_in_list
       assert !new.first?
       assert new.last?
 
       assert_equal [1, 2, 3, 4, 5], ListMixin.where(parent_id: 5).order('pos').map(&:id)
     end
 
-    def test_before_create_callback_adds_to_given_position
+    def test_insert_at_adds_new_record_to_given_position
       assert_equal [1, 2, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
 
       new = ListMixin.new(parent_id: 5)
-      new.pos = 1
-      new.save!
-      assert_equal 1, new.pos
+      new.insert_at 1
+      assert_equal 1, new.index_in_list
       assert new.first?
       assert !new.last?
 
       assert_equal [5, 1, 2, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
 
       new = ListMixin.new(parent_id: 5)
-      new.pos = 3
-      new.save!
-      assert_equal 3, new.pos
+      new.insert_at 3
+      assert_equal 3, new.index_in_list
       assert !new.first?
       assert !new.last?
 

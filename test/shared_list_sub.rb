@@ -67,37 +67,37 @@ module Shared
 
     def test_insert_at
       new = ListMixin.create("parent_id" => 20)
-      assert_equal 1, new.pos
+      assert_equal 1, new.index_in_list
 
       new = ListMixinSub1.create("parent_id" => 20)
-      assert_equal 2, new.pos
+      assert_equal 2, new.index_in_list
 
       new = ListMixinSub1.create("parent_id" => 20)
-      assert_equal 3, new.pos
+      assert_equal 3, new.index_in_list
 
       new4 = ListMixin.create("parent_id" => 20)
-      assert_equal 4, new4.pos
+      assert_equal 4, new4.index_in_list
 
       new4.insert_at(3)
-      assert_equal 3, new4.pos
+      assert_equal 3, new4.index_in_list
 
       new.reload
-      assert_equal 4, new.pos
+      assert_equal 4, new.index_in_list
 
       new.insert_at(2)
-      assert_equal 2, new.pos
+      assert_equal 2, new.index_in_list
 
       new4.reload
-      assert_equal 4, new4.pos
+      assert_equal 4, new4.index_in_list
 
       new5 = ListMixinSub1.create("parent_id" => 20)
-      assert_equal 5, new5.pos
+      assert_equal 5, new5.index_in_list
 
       new5.insert_at(1)
-      assert_equal 1, new5.pos
+      assert_equal 1, new5.index_in_list
 
       new4.reload
-      assert_equal 5, new4.pos
+      assert_equal 5, new4.index_in_list
     end
 
     def test_delete_middle
@@ -107,16 +107,16 @@ module Shared
 
       assert_equal [1, 3, 4], ListMixin.where(parent_id: 5000).order('pos').map(&:id)
 
-      assert_equal 1, ListMixin.where(id: 1).first.pos
-      assert_equal 2, ListMixin.where(id: 3).first.pos
-      assert_equal 3, ListMixin.where(id: 4).first.pos
+      assert_equal 1, ListMixin.where(id: 1).first.index_in_list
+      assert_equal 2, ListMixin.where(id: 3).first.index_in_list
+      assert_equal 3, ListMixin.where(id: 4).first.index_in_list
 
       ListMixin.where(id: 1).first.destroy
 
       assert_equal [3, 4], ListMixin.where(parent_id: 5000).order('pos').map(&:id)
 
-      assert_equal 1, ListMixin.where(id: 3).first.pos
-      assert_equal 2, ListMixin.where(id: 4).first.pos
+      assert_equal 1, ListMixin.where(id: 3).first.index_in_list
+      assert_equal 2, ListMixin.where(id: 4).first.index_in_list
     end
   end
 end

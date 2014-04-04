@@ -25,10 +25,10 @@ module Shared
 
       ArrayScopeListMixin.where(id: 4).first.move_to_top
       assert_equal [4, 1, 3, 2], ArrayScopeListMixin.where(parent_id: 5, parent_type: 'ParentClass').order('pos').map(&:id)
-      
+
       ArrayScopeListMixin.where(id: 4).first.insert_at(4)
       assert_equal [1, 3, 2, 4], ArrayScopeListMixin.where(parent_id: 5, parent_type: 'ParentClass').order('pos').map(&:id)
-      assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(parent_id: 5, parent_type: 'ParentClass').order('pos').map(&:pos)
+      assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(parent_id: 5, parent_type: 'ParentClass').order('pos').map(&:index_in_list)
     end
 
     def test_move_to_bottom_with_next_to_last_item
@@ -51,59 +51,59 @@ module Shared
 
     def test_insert
       new = ArrayScopeListMixin.create(parent_id: 20, parent_type: 'ParentClass')
-      assert_equal 1, new.pos
+      assert_equal 1, new.index_in_list
       assert new.first?
       assert new.last?
 
       new = ArrayScopeListMixin.create(parent_id: 20, parent_type: 'ParentClass')
-      assert_equal 2, new.pos
+      assert_equal 2, new.index_in_list
       assert !new.first?
       assert new.last?
 
       new = ArrayScopeListMixin.create(parent_id: 20, parent_type: 'ParentClass')
-      assert_equal 3, new.pos
+      assert_equal 3, new.index_in_list
       assert !new.first?
       assert new.last?
 
       new = ArrayScopeListMixin.create(parent_id: 0, parent_type: 'ParentClass')
-      assert_equal 1, new.pos
+      assert_equal 1, new.index_in_list
       assert new.first?
       assert new.last?
     end
 
     def test_insert_at
       new = ArrayScopeListMixin.create(parent_id: 20, parent_type: 'ParentClass')
-      assert_equal 1, new.pos
+      assert_equal 1, new.index_in_list
 
       new = ArrayScopeListMixin.create(parent_id: 20, parent_type: 'ParentClass')
-      assert_equal 2, new.pos
+      assert_equal 2, new.index_in_list
 
       new = ArrayScopeListMixin.create(parent_id: 20, parent_type: 'ParentClass')
-      assert_equal 3, new.pos
+      assert_equal 3, new.index_in_list
 
       new4 = ArrayScopeListMixin.create(parent_id: 20, parent_type: 'ParentClass')
-      assert_equal 4, new4.pos
+      assert_equal 4, new4.index_in_list
 
       new4.insert_at(3)
-      assert_equal 3, new4.pos
+      assert_equal 3, new4.index_in_list
 
       new.reload
-      assert_equal 4, new.pos
+      assert_equal 4, new.index_in_list
 
       new.insert_at(2)
-      assert_equal 2, new.pos
+      assert_equal 2, new.index_in_list
 
       new4.reload
-      assert_equal 4, new4.pos
+      assert_equal 4, new4.index_in_list
 
       new5 = ArrayScopeListMixin.create(parent_id: 20, parent_type: 'ParentClass')
-      assert_equal 5, new5.pos
+      assert_equal 5, new5.index_in_list
 
       new5.insert_at(1)
-      assert_equal 1, new5.pos
+      assert_equal 1, new5.index_in_list
 
       new4.reload
-      assert_equal 5, new4.pos
+      assert_equal 5, new4.index_in_list
     end
 
     def test_delete_middle
@@ -113,16 +113,16 @@ module Shared
 
       assert_equal [1, 3, 4], ArrayScopeListMixin.where(parent_id: 5, parent_type: 'ParentClass').order('pos').map(&:id)
 
-      assert_equal 1, ArrayScopeListMixin.where(id: 1).first.pos
-      assert_equal 2, ArrayScopeListMixin.where(id: 3).first.pos
-      assert_equal 3, ArrayScopeListMixin.where(id: 4).first.pos
+      assert_equal 1, ArrayScopeListMixin.where(id: 1).first.index_in_list
+      assert_equal 2, ArrayScopeListMixin.where(id: 3).first.index_in_list
+      assert_equal 3, ArrayScopeListMixin.where(id: 4).first.index_in_list
 
       ArrayScopeListMixin.where(id: 1).first.destroy
 
       assert_equal [3, 4], ArrayScopeListMixin.where(parent_id: 5, parent_type: 'ParentClass').order('pos').map(&:id)
 
-      assert_equal 1, ArrayScopeListMixin.where(id: 3).first.pos
-      assert_equal 2, ArrayScopeListMixin.where(id: 4).first.pos
+      assert_equal 1, ArrayScopeListMixin.where(id: 3).first.index_in_list
+      assert_equal 2, ArrayScopeListMixin.where(id: 4).first.index_in_list
     end
 
     def test_remove_from_list_should_then_fail_in_list?
@@ -138,10 +138,10 @@ module Shared
 
       assert_equal [2, 1, 3, 4], ArrayScopeListMixin.where(parent_id: 5, parent_type: 'ParentClass').order('pos').map(&:id)
 
-      assert_equal 1,   ArrayScopeListMixin.where(id: 1).first.pos
-      assert_equal nil, ArrayScopeListMixin.where(id: 2).first.pos
-      assert_equal 2,   ArrayScopeListMixin.where(id: 3).first.pos
-      assert_equal 3,   ArrayScopeListMixin.where(id: 4).first.pos
+      assert_equal 1,   ArrayScopeListMixin.where(id: 1).first.index_in_list
+      assert_equal nil, ArrayScopeListMixin.where(id: 2).first.index_in_list
+      assert_equal 2,   ArrayScopeListMixin.where(id: 3).first.index_in_list
+      assert_equal 3,   ArrayScopeListMixin.where(id: 4).first.index_in_list
     end
 
     def test_remove_before_destroy_does_not_shift_lower_items_twice
@@ -152,9 +152,9 @@ module Shared
 
       assert_equal [1, 3, 4], ArrayScopeListMixin.where(parent_id: 5, parent_type: 'ParentClass').order('pos').map(&:id)
 
-      assert_equal 1, ArrayScopeListMixin.where(id: 1).first.pos
-      assert_equal 2, ArrayScopeListMixin.where(id: 3).first.pos
-      assert_equal 3, ArrayScopeListMixin.where(id: 4).first.pos
+      assert_equal 1, ArrayScopeListMixin.where(id: 1).first.index_in_list
+      assert_equal 2, ArrayScopeListMixin.where(id: 3).first.index_in_list
+      assert_equal 3, ArrayScopeListMixin.where(id: 4).first.index_in_list
     end
   end
 end

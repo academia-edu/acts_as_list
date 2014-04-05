@@ -468,6 +468,14 @@ class BulkReorderingTest < ActsAsListTestCase
     assert_reordering [4, 2, 3, 1], [4, 2, 3, 1]
   end
 
+  def test_reversal
+    assert_reordering [4, 3, 2, 1], [4, 3, 2, 1]
+  end
+
+  def test_one_swap
+    assert_reordering [1, 3, 2, 4], [1, 3, 2, 4]
+  end
+
   def test_when_the_user_does_not_provide_a_complete_reordering
     assert_reordering [4, 2, 1], [4, 2, 1, 3]
   end

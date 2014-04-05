@@ -1,7 +1,7 @@
 module Shared
   module ZeroBased
     def setup
-       (1..4).each { |counter| ZeroBasedMixin.create! pos: counter, parent_id: 5 }
+       (1..4).each { |counter| ZeroBasedMixin.create! parent_id: 5 }
     end
 
     def test_insert

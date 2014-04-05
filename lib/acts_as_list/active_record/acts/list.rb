@@ -115,6 +115,48 @@ module ActiveRecord
           if configuration[:add_new_at].present?
             self.send(:before_create, "add_to_list_#{configuration[:add_new_at]}", if: :not_in_list?)
           end
+
+          # Update the given object's list according to the order of the given IDs. Returns the final list
+          # of ids, which may be different from the given list if the given list was inconsistent with the database.
+          define_singleton_method :update_ordered_list do |scope_param, new_ids|
+            conditions =
+              if scope_param.is_a?(Hash)
+                scope_param
+              elsif configuration[:scope].is_a?(Symbol)
+                { configuration[:scope] => scope_param }
+              elsif configuration[:scope].is_a?(Array) && scope_param.is_a?(Array)
+                Hash[configuration[:scope].zip(scope_param)]
+              else
+                configuration[:scope]
+              end
+
+            records_by_id = unscoped.where(conditions).inject({}) do |memo, obj|
+              memo[obj.send(primary_key)] = obj
+              memo
+            end
+
+            current_ids = records_by_id.sort_by{ |id,obj| obj.send(configuration[:column]) }.map(&:first)
+
+            new_ids &= current_ids
+            new_ids += (current_ids - new_ids)
+
+            updated_positions = {}
+
+            # TODO Try to minimize # of updates
+            new_ids.zip(current_ids).each_with_index do |(new_id_at_i, current_id_at_i), i|
+              if new_id_at_i != current_id_at_i
+                updated_positions[new_id_at_i] = records_by_id[current_id_at_i].send(configuration[:column])
+              end
+            end
+
+            transaction do
+              updated_positions.each do |id, position|
+                records_by_id[id].update_attribute configuration[:column], position
+              end
+            end
+
+            new_ids
+          end
         end
       end
 

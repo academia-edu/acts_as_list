@@ -431,8 +431,8 @@ end
 class MultipleListsTest < ActsAsListTestCase
   def setup
     setup_db
-    (1..4).each { |counter| ListMixin.create! :pos => counter, :parent_id => 1}
-    (1..4).each { |counter| ListMixin.create! :pos => counter, :parent_id => 2}
+    (1..4).each { |counter| ListMixin.create! :parent_id => 1}
+    (1..4).each { |counter| ListMixin.create! :parent_id => 2}
   end
 
   def test_check_scope_order
@@ -452,12 +452,70 @@ class MultipleListsTest < ActsAsListTestCase
   end
 end
 
+class BulkReorderingTest < ActsAsListTestCase
+  def setup
+    setup_db
+    (1..4).each { |counter| ListMixin.create! parent_id: 5 }
+  end
+
+  def assert_reordering(input, expected)
+    res = ListMixin.update_ordered_list 5, input
+    assert_equal expected, res
+    assert_equal expected, ListMixin.where(parent_id: 5).order(:pos).map(&:id)
+  end
+
+  def test_reorders_elements_based_on_the_given_list
+    assert_reordering [4, 2, 3, 1], [4, 2, 3, 1]
+  end
+
+  def test_when_the_user_does_not_provide_a_complete_reordering
+    assert_reordering [4, 2, 1], [4, 2, 1, 3]
+  end
+
+  def test_when_the_user_provides_nonexistent_elements
+    assert_reordering [5, 4, 3, 2, 1], [4, 3, 2, 1]
+  end
+
+  def test_empty_reordering_preserves_existing_order
+    assert_reordering [], [1, 2, 3, 4]
+  end
+end
+
+class BulkReorderingTopAdditionTest < ActsAsListTestCase
+  def setup
+    setup_db
+    (1..4).each { |counter| TopAdditionMixin.create! parent_id: 5 }
+  end
+
+  def assert_reordering(input, expected)
+    res = TopAdditionMixin.update_ordered_list 5, input
+    assert_equal expected, res
+    assert_equal expected, TopAdditionMixin.where(parent_id: 5).order(:pos).map(&:id)
+  end
+
+  def test_reorders_elements_based_on_the_given_list
+    assert_reordering [1, 2, 4, 3], [1, 2, 4, 3]
+  end
+
+  def test_when_the_user_does_not_provide_a_complete_reordering
+    assert_reordering [1, 4, 3], [1, 4, 3, 2]
+  end
+
+  def test_when_the_user_provides_nonexistent_elements
+    assert_reordering [5, 1, 2, 4, 3], [1, 2, 4, 3]
+  end
+
+  def test_empty_reordering_preserves_existing_order
+    assert_reordering [], [4, 3, 2, 1]
+  end
+end
+
 class MultipleListsArrayScopeTest < ActsAsListTestCase
   def setup
     setup_db
-    (1..4).each { |counter| ArrayScopeListMixin.create! :pos => counter,:parent_id => 1, :parent_type => 'anything'}
-    (1..4).each { |counter| ArrayScopeListMixin.create! :pos => counter,:parent_id => 2, :parent_type => 'something'}
-    (1..4).each { |counter| ArrayScopeListMixin.create! :pos => counter,:parent_id => 3, :parent_type => 'anything'}
+    (1..4).each { |counter| ArrayScopeListMixin.create! :parent_id => 1, :parent_type => 'anything'}
+    (1..4).each { |counter| ArrayScopeListMixin.create! :parent_id => 2, :parent_type => 'something'}
+    (1..4).each { |counter| ArrayScopeListMixin.create! :parent_id => 3, :parent_type => 'anything'}
   end
 
   def test_order_after_all_scope_properties_are_changed
@@ -506,5 +564,14 @@ class MultipleListsArrayScopeTest < ActsAsListTestCase
     ArrayScopeListMixin.find(2).update_attributes(:parent_id => 4)
     assert_equal [1, 2, 3], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:index_in_list)
     assert_equal [1], ArrayScopeListMixin.where(:parent_id => 4, :parent_type => 'anything').order(:pos).map(&:index_in_list)
+  end
+
+  def test_bulk_reordering
+    assert_equal [1, 2, 3, 4], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:id)
+    assert_equal [5, 6, 7, 8], ArrayScopeListMixin.where(:parent_id => 2, :parent_type => 'something').order(:pos).map(&:id)
+    res = ArrayScopeListMixin.update_ordered_list([1, 'anything'], [4, 1, 3, 2])
+    assert_equal [4, 1, 3, 2], res
+    assert_equal [4, 1, 3, 2], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:id)
+    assert_equal [5, 6, 7, 8], ArrayScopeListMixin.where(:parent_id => 2, :parent_type => 'something').order(:pos).map(&:id)
   end
 end

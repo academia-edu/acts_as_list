@@ -363,7 +363,7 @@ module ActiveRecord
             gap = lower_item.send(position_column) - upper_item.send(position_column)
 
             if gap == 0 || gap / 2.0 == 0
-              # Maybe we should handle this case cleanly, but it seems more likely to indicate a bug than an actual exhaustion of floating point numbers
+              # TODO Maybe we should handle this case cleanly, but it seems more likely to indicate a bug than an actual exhaustion of floating point numbers
               raise "No gap between #{lower_item} and #{upper_item}, this is improbable"
             end
 

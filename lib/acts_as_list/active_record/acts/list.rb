@@ -200,6 +200,8 @@ module ActiveRecord
           send(position_column).nil?
         end
 
+        # Counting-from-one index in the list,
+        # unless top_of_list is defined otherwise.
         def index_in_list
           higher_items.count + acts_as_list_top if in_list?
         end
@@ -339,10 +341,19 @@ module ActiveRecord
             end
           end
 
-          # TODO implement limit
           def items_above(position, limit=nil)
-            acts_as_list_list.
+            # This is needed since we want to order DESC for purposes of the limit,
+            # but then order ASC in the actual results returned.
+            inner_select = acts_as_list_list.
               where("#{position_column} < ?", position).
+              order("#{acts_as_list_class.table_name}.#{position_column} DESC").
+              limit(limit).
+              arel.
+              as(acts_as_list_class.table_name)
+
+            acts_as_list_class.
+              unscoped.
+              from(inner_select).
               order("#{acts_as_list_class.table_name}.#{position_column} ASC")
           end
 

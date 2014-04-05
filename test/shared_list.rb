@@ -109,8 +109,6 @@ module Shared
     def test_delete_middle
       assert_equal [1, 2, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)
 
-
-
       ListMixin.where(id: 2).first.destroy
 
       assert_equal [1, 3, 4], ListMixin.where(parent_id: 5).order('pos').map(&:id)

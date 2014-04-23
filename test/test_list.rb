@@ -487,6 +487,12 @@ class BulkReorderingTest < ActsAsListTestCase
   def test_empty_reordering_preserves_existing_order
     assert_reordering [], [1, 2, 3, 4]
   end
+
+  def test_reorder_from_scratch
+    new_ordering = [4, 2, 3, 1].map { |id| ListMixin.find(id) }
+    ListMixin.reorder_from_scratch!(new_ordering)
+    assert_equal [4, 2, 3, 1], ListMixin.where(parent_id: 5).order(:pos).map(&:id)
+  end
 end
 
 class BulkReorderingTopAdditionTest < ActsAsListTestCase
@@ -581,5 +587,10 @@ class MultipleListsArrayScopeTest < ActsAsListTestCase
     assert_equal [4, 1, 3, 2], res
     assert_equal [4, 1, 3, 2], ArrayScopeListMixin.where(:parent_id => 1, :parent_type => 'anything').order(:pos).map(&:id)
     assert_equal [5, 6, 7, 8], ArrayScopeListMixin.where(:parent_id => 2, :parent_type => 'something').order(:pos).map(&:id)
+  end
+
+  def test_reorder_from_scratch
+    new_ordering = [6,5,4,3].map { |id| ArrayScopeListMixin.find(id) }
+    assert_raises(ArgumentError) { ArrayScopeListMixin.reorder_from_scratch!(new_ordering) }
   end
 end
